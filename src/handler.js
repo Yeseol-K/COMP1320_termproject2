@@ -16,7 +16,7 @@ const allRoutes = {
  
   // POST: localhost:3000/form
   "/form:post": (request, response) => {
-    controller.sendFormData(request, response);
+    controller.uploadImages(request, response);
   },
   // POST: localhost:3000/images
   "/images:post": (request, response) => {

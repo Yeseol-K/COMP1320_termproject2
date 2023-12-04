@@ -1,5 +1,5 @@
 const fs = require("fs");
-const { readFile } = require("fs/promises");
+const { readFile, writeFile } = require("fs/promises");
 const { DEFAULT_HEADER } = require("./util/util");
 const path = require("path");
 var qs = require("querystring");
@@ -30,6 +30,7 @@ const controller = {
     const arr = JSON.parse(database);
 
     const foundUser = arr.find(user => user.username === username)
+    console.log(foundUser)
     
     const folderPath = path.join(__dirname, "..", "src", "views", "feed.ejs");
     const data = {
@@ -45,15 +46,7 @@ const controller = {
         response.end(newHtml);
     });
   },
-  sendFormData: async (request,response) => {
-    const username = (request.url.split("?")[1]).split("=")[1]; //john123
-      fs.readFile("database/data.json","utf8", (err,data) => {
-        if(err) {
-          console.error(err);
-        }
-        const objData = JSON.parse(data);
-      })
-  },
+
   uploadImages: async (request, response) => {
     const username = (request.url.split("?")[1]).split("=")[1]; 
     const form = formidable({keepExtensions: true});
@@ -61,9 +54,17 @@ const controller = {
     let fields;
     let files;
     [fields, files] = await form.parse(request);
-    // MOVE THE FILE HERE
-    console.log(fields)
-    console.log(files);
+    const newFilename = files.image[0].newFilename;
+    const database = await readFile("database/data.json", "utf8");
+    const arr = JSON.parse(database);
+    const profiles = arr.find(profile => profile.username === username);
+    profiles.photos.push(newFilename);
+    await writeFile("database/data.json", JSON.stringify(arr))
+    console.log(database)
+    console.log(profiles);
+   
+  
+  
     response.writeHead(200, { 'Content-Type': 'application/json' });
     response.end(JSON.stringify({ fields, files }, null, 2));
     return;
